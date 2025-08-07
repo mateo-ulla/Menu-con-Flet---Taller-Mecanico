@@ -32,9 +32,10 @@ class Herramienta_Usuario:
         self.txt_usuario = ft.TextField(label="Usuario", width=260)
         self.txt_contraseña = ft.TextField(label="Contraseña", password=True, can_reveal_password=True, width=260)
         self.txt_rol = ft.TextField(label="Rol", width=260)
-        btn_guardar = ft.ElevatedButton("Guardar", icon=ft.icons.SAVE, on_click=self.guardar)
-        btn_limpiar = ft.ElevatedButton("Limpiar", icon=ft.icons.CLEAR, on_click=self.limpiar)
-        btn_volver = ft.ElevatedButton("Volver", icon=ft.icons.ARROW_BACK, on_click=self.volver_menu)
+        btn_alta = ft.ElevatedButton("Alta", on_click=self.alta)
+        btn_baja = ft.ElevatedButton("Baja", on_click=self.baja)
+        btn_consulta = ft.ElevatedButton("Consulta", on_click=self.consulta)
+        btn_volver = ft.ElevatedButton("Volver", on_click=self.volver_menu)
         self.tabla = ft.DataTable(
             columns=[
                 ft.DataColumn(label=ft.Text("ID")),
@@ -54,7 +55,7 @@ class Herramienta_Usuario:
             self.txt_usuario,
             self.txt_contraseña,
             self.txt_rol,
-            ft.Row([btn_guardar, btn_limpiar, btn_volver], spacing=10),
+            ft.Row([btn_alta, btn_baja, btn_consulta, btn_volver], spacing=10),
             ft.Divider(),
             self.tabla
         )
@@ -77,30 +78,47 @@ class Herramienta_Usuario:
                     ft.DataCell(ft.Text(fila[4])),
                     ft.DataCell(ft.Text(fila[5])),
                     ft.DataCell(ft.Row([
-                        ft.IconButton(icon=ft.icons.EDIT, tooltip="Editar", on_click=lambda e, id=idu: self.cargar_editar(id)),
-                        ft.IconButton(icon=ft.icons.DELETE, tooltip="Borrar", on_click=lambda e, id=idu: self.borrar(id)),
+                    ft.IconButton(content=ft.Image(src="iconos/modificar.png", width=24, height=24), tooltip="Editar", on_click=lambda e, id=idu: self.cargar_editar(id)),
+                    ft.IconButton(content=ft.Image(src="iconos/bote-de-basura.png", width=24, height=24), tooltip="Borrar", on_click=lambda e, id=idu: self.borrar(id)),
                     ]))
                 ]))
         except Exception:
             pass
         self.page.update()
 
-    def guardar(self, e):
+    def alta(self, e):
         nombre = self.txt_nombre.value.strip()
         apellido = self.txt_apellido.value.strip()
         usuario = self.txt_usuario.value.strip()
         contraseña = self.txt_contraseña.value.strip()
         rol = self.txt_rol.value.strip()
         if nombre and apellido and usuario and contraseña and rol:
-            if hasattr(self, 'editando') and self.editando:
-                self.cursor.execute("UPDATE usuarios SET nombre=%s, apellido=%s, usuario=%s, contraseña=%s, rol=%s WHERE id_usuario=%s", (nombre, apellido, usuario, contraseña, rol, self.editando))
-                self.conn.commit()
-                self.editando = None
-            else:
+            self.cursor.execute("SELECT usuario FROM usuarios WHERE usuario=%s", (usuario,))
+            if not self.cursor.fetchone():
                 self.cursor.execute("INSERT INTO usuarios (nombre, apellido, usuario, contraseña, rol) VALUES (%s, %s, %s, %s, %s)", (nombre, apellido, usuario, contraseña, rol))
                 self.conn.commit()
-            self.limpiar()
-            self.mostrar_usuarios()
+        self.limpiar()
+        self.mostrar_usuarios()
+
+    def baja(self, e):
+        usuario = self.txt_usuario.value.strip()
+        if usuario:
+            self.cursor.execute("DELETE FROM usuarios WHERE usuario=%s", (usuario,))
+            self.conn.commit()
+        self.limpiar()
+        self.mostrar_usuarios()
+
+    def consulta(self, e):
+        usuario = self.txt_usuario.value.strip()
+        if usuario:
+            self.cursor.execute("SELECT nombre, apellido, contraseña, rol FROM usuarios WHERE usuario=%s", (usuario,))
+            data = self.cursor.fetchone()
+            if data:
+                self.txt_nombre.value = data[0]
+                self.txt_apellido.value = data[1]
+                self.txt_contraseña.value = data[2]
+                self.txt_rol.value = data[3]
+                self.page.update()
 
     def limpiar(self, e=None):
         self.txt_nombre.value = ""

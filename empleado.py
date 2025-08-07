@@ -32,9 +32,10 @@ class Herramienta_Empleado:
         self.txt_legajo = ft.TextField(label="Legajo", width=260)
         self.txt_rol = ft.TextField(label="Rol", width=260)
         self.txt_estado = ft.TextField(label="Estado", width=260)
-        btn_guardar = ft.ElevatedButton("Guardar", icon=ft.icons.SAVE, on_click=self.guardar)
-        btn_limpiar = ft.ElevatedButton("Limpiar", icon=ft.icons.CLEAR, on_click=self.limpiar)
-        btn_volver = ft.ElevatedButton("Volver", icon=ft.icons.ARROW_BACK, on_click=self.volver_menu)
+        btn_alta = ft.ElevatedButton("Alta", on_click=self.alta)
+        btn_baja = ft.ElevatedButton("Baja", on_click=self.baja)
+        btn_consulta = ft.ElevatedButton("Consulta", on_click=self.consulta)
+        btn_volver = ft.ElevatedButton("Volver", on_click=self.volver_menu)
         self.tabla = ft.DataTable(
             columns=[
                 ft.DataColumn(label=ft.Text("Legajo")),
@@ -53,7 +54,7 @@ class Herramienta_Empleado:
             self.txt_apellido,
             self.txt_rol,
             self.txt_estado,
-            ft.Row([btn_guardar, btn_limpiar, btn_volver], spacing=10),
+            ft.Row([btn_alta, btn_baja, btn_consulta, btn_volver], spacing=10),
             ft.Divider(),
             self.tabla
         )
@@ -75,30 +76,47 @@ class Herramienta_Empleado:
                     ft.DataCell(ft.Text(fila[3])),
                     ft.DataCell(ft.Text(fila[4])),
                     ft.DataCell(ft.Row([
-                        ft.IconButton(icon=ft.icons.EDIT, tooltip="Editar", on_click=lambda e, id=legajo: self.cargar_editar(id)),
-                        ft.IconButton(icon=ft.icons.DELETE, tooltip="Borrar", on_click=lambda e, id=legajo: self.borrar(id)),
+                        ft.IconButton(content=ft.Image(src="iconos/modificar.png", width=24, height=24), tooltip="Editar", on_click=lambda e, id=legajo: self.cargar_editar(id)),
+                        ft.IconButton(content=ft.Image(src="iconos/bote-de-basura.png", width=24, height=24), tooltip="Borrar", on_click=lambda e, id=legajo: self.borrar(id)),
                     ]))
                 ]))
         except Exception:
             pass
         self.page.update()
 
-    def guardar(self, e):
+    def alta(self, e):
         legajo = self.txt_legajo.value.strip()
         nombre = self.txt_nombre.value.strip()
         apellido = self.txt_apellido.value.strip()
         rol = self.txt_rol.value.strip()
         estado = self.txt_estado.value.strip()
         if legajo and nombre and apellido and rol and estado:
-            if hasattr(self, 'editando') and self.editando:
-                self.cursor.execute("UPDATE mecanicos SET nombre=%s, apellido=%s, rol=%s, estado=%s WHERE legajo=%s", (nombre, apellido, rol, estado, self.editando))
-                self.conn.commit()
-                self.editando = None
-            else:
+            self.cursor.execute("SELECT legajo FROM mecanicos WHERE legajo=%s", (legajo,))
+            if not self.cursor.fetchone():
                 self.cursor.execute("INSERT INTO mecanicos (legajo, nombre, apellido, rol, estado) VALUES (%s, %s, %s, %s, %s)", (legajo, nombre, apellido, rol, estado))
                 self.conn.commit()
-            self.limpiar()
-            self.mostrar_empleados()
+        self.limpiar()
+        self.mostrar_empleados()
+
+    def baja(self, e):
+        legajo = self.txt_legajo.value.strip()
+        if legajo:
+            self.cursor.execute("DELETE FROM mecanicos WHERE legajo=%s", (legajo,))
+            self.conn.commit()
+        self.limpiar()
+        self.mostrar_empleados()
+
+    def consulta(self, e):
+        legajo = self.txt_legajo.value.strip()
+        if legajo:
+            self.cursor.execute("SELECT nombre, apellido, rol, estado FROM mecanicos WHERE legajo=%s", (legajo,))
+            data = self.cursor.fetchone()
+            if data:
+                self.txt_nombre.value = data[0]
+                self.txt_apellido.value = data[1]
+                self.txt_rol.value = data[2]
+                self.txt_estado.value = data[3]
+                self.page.update()
 
     def limpiar(self, e=None):
         self.txt_legajo.value = ""

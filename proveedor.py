@@ -31,9 +31,10 @@ class Herramienta_Proveedor:
         self.txt_cuit = ft.TextField(label="CUIT", width=260)
         self.txt_telefono = ft.TextField(label="Teléfono", width=260)
         self.txt_direccion = ft.TextField(label="Dirección", width=260)
-        btn_guardar = ft.ElevatedButton("Guardar", icon=ft.icons.SAVE, on_click=self.guardar)
-        btn_limpiar = ft.ElevatedButton("Limpiar", icon=ft.icons.CLEAR, on_click=self.limpiar)
-        btn_volver = ft.ElevatedButton("Volver", icon=ft.icons.ARROW_BACK, on_click=self.volver_menu)
+        btn_alta = ft.ElevatedButton("Alta", on_click=self.alta)
+        btn_baja = ft.ElevatedButton("Baja", on_click=self.baja)
+        btn_consulta = ft.ElevatedButton("Consulta", on_click=self.consulta)
+        btn_volver = ft.ElevatedButton("Volver", on_click=self.volver_menu)
         self.tabla = ft.DataTable(
             columns=[
                 ft.DataColumn(label=ft.Text("ID")),
@@ -51,7 +52,7 @@ class Herramienta_Proveedor:
             self.txt_cuit,
             self.txt_telefono,
             self.txt_direccion,
-            ft.Row([btn_guardar, btn_limpiar, btn_volver], spacing=10),
+            ft.Row([btn_alta, btn_baja, btn_consulta, btn_volver], spacing=10),
             ft.Divider(),
             self.tabla
         )
@@ -73,29 +74,45 @@ class Herramienta_Proveedor:
                     ft.DataCell(ft.Text(fila[3])),
                     ft.DataCell(ft.Text(fila[4])),
                     ft.DataCell(ft.Row([
-                        ft.IconButton(icon=ft.icons.EDIT, tooltip="Editar", on_click=lambda e, id=idp: self.cargar_editar(id)),
-                        ft.IconButton(icon=ft.icons.DELETE, tooltip="Borrar", on_click=lambda e, id=idp: self.borrar(id)),
+                        ft.IconButton(content=ft.Image(src="iconos/modificar.png", width=24, height=24), tooltip="Editar", on_click=lambda e, id=idp: self.cargar_editar(id)),
+                        ft.IconButton(content=ft.Image(src="iconos/bote-de-basura.png", width=24, height=24), tooltip="Borrar", on_click=lambda e, id=idp: self.borrar(id)),
                     ]))
                 ]))
         except Exception:
             pass
         self.page.update()
 
-    def guardar(self, e):
+    def alta(self, e):
         nombre = self.txt_nombre.value.strip()
         cuit = self.txt_cuit.value.strip()
         telefono = self.txt_telefono.value.strip()
         direccion = self.txt_direccion.value.strip()
         if nombre and cuit and telefono and direccion:
-            if hasattr(self, 'editando') and self.editando:
-                self.cursor.execute("UPDATE proveedores SET nombre=%s, cuit=%s, telefono=%s, direccion=%s WHERE id=%s", (nombre, cuit, telefono, direccion, self.editando))
-                self.conn.commit()
-                self.editando = None
-            else:
+            self.cursor.execute("SELECT nombre FROM proveedores WHERE nombre=%s", (nombre,))
+            if not self.cursor.fetchone():
                 self.cursor.execute("INSERT INTO proveedores (nombre, cuit, telefono, direccion) VALUES (%s, %s, %s, %s)", (nombre, cuit, telefono, direccion))
                 self.conn.commit()
-            self.limpiar()
-            self.mostrar_proveedores()
+        self.limpiar()
+        self.mostrar_proveedores()
+
+    def baja(self, e):
+        nombre = self.txt_nombre.value.strip()
+        if nombre:
+            self.cursor.execute("DELETE FROM proveedores WHERE nombre=%s", (nombre,))
+            self.conn.commit()
+        self.limpiar()
+        self.mostrar_proveedores()
+
+    def consulta(self, e):
+        nombre = self.txt_nombre.value.strip()
+        if nombre:
+            self.cursor.execute("SELECT cuit, telefono, direccion FROM proveedores WHERE nombre=%s", (nombre,))
+            data = self.cursor.fetchone()
+            if data:
+                self.txt_cuit.value = data[0]
+                self.txt_telefono.value = data[1]
+                self.txt_direccion.value = data[2]
+                self.page.update()
 
     def limpiar(self, e=None):
         self.txt_nombre.value = ""

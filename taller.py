@@ -1,9 +1,8 @@
-
 import flet as ft
 import mysql.connector
 from cliente import Herramienta_Cliente
 from proveedor import Herramienta_Proveedor
-from repuesto import Herramienta_Repuesto
+from producto import Herramienta_Producto
 from empleado import Herramienta_Empleado
 from usuario import Herramienta_Usuario
 
@@ -27,7 +26,7 @@ def menu_principal(page: ft.Page):
     iconos = {
         "cliente": ft.Image(src="iconos/Cliente.png", width=32, height=32),
         "proveedor": ft.Image(src="iconos/proveedor.png", width=32, height=32),
-        "repuesto": ft.Image(src="iconos/caja-de-cambios.png", width=32, height=32),
+        "producto": ft.Image(src="iconos/caja-de-cambios.png", width=32, height=32),
         "empleado": ft.Image(src="iconos/Empleado.png", width=32, height=32),
         "usuario": ft.Image(src="iconos/usuarios.png", width=32, height=32),
         "ficha": ft.Image(src="iconos/auto.png", width=32, height=32),
@@ -37,7 +36,7 @@ def menu_principal(page: ft.Page):
         items=[
             ft.PopupMenuItem(text="Copiar", icon=ft.Image(src="iconos/bandeja-de-entrada.png", width=24, height=24)),
             ft.PopupMenuItem(text="Pegar", icon=ft.Image(src="iconos/papel.png", width=24, height=24)),
-            ft.PopupMenuItem(text="Salir", icon=ft.Image(src="iconos/nota-adhesiva.png", width=24, height=24), on_click=lambda e: page.window_close()),
+            ft.PopupMenuItem(text="Salir", icon=ft.Image(src="iconos/nota-adhesiva.png", width=24, height=24), on_click=lambda e: page.window.close()),
         ],
         content=ft.Row([ft.Image(src="iconos/carpeta.png", width=24, height=24), ft.Text("Archivo")]), tooltip="Archivo"
     )
@@ -45,7 +44,7 @@ def menu_principal(page: ft.Page):
         items=[
             ft.PopupMenuItem(content=ft.Row([iconos["cliente"], ft.Text("Cliente")]), on_click=lambda e: Herramienta_Cliente(page, menu_principal), tooltip="Gestión de clientes"),
             ft.PopupMenuItem(content=ft.Row([iconos["proveedor"], ft.Text("Proveedor")]), on_click=lambda e: Herramienta_Proveedor(page, menu_principal), tooltip="Gestión de proveedores"),
-            ft.PopupMenuItem(content=ft.Row([iconos["repuesto"], ft.Text("Producto")]), on_click=lambda e: Herramienta_Repuesto(page, menu_principal), tooltip="Gestión de repuestos"),
+            ft.PopupMenuItem(content=ft.Row([iconos["producto"], ft.Text("Producto")]), on_click=lambda e: Herramienta_Producto(page, menu_principal), tooltip="Gestión de productos"),
             ft.PopupMenuItem(content=ft.Row([iconos["empleado"], ft.Text("Empleado")]), on_click=lambda e: Herramienta_Empleado(page, menu_principal), tooltip="Gestión de empleados"),
             ft.PopupMenuItem(content=ft.Row([iconos["usuario"], ft.Text("Usuario")]), on_click=lambda e: Herramienta_Usuario(page, menu_principal), tooltip="Gestión de usuarios"),
         ],
@@ -53,8 +52,8 @@ def menu_principal(page: ft.Page):
     )
     administracion_menu = ft.PopupMenuButton(
         items=[
-            ft.PopupMenuItem(content=ft.Row([iconos["ficha"], ft.Text("Ficha del Vehículo")]), tooltip="Ficha técnica"),
-            ft.PopupMenuItem(content=ft.Row([iconos["presupuesto"], ft.Text("Presupuesto")]), tooltip="Presupuestos"),
+            ft.PopupMenuItem(content=ft.Row([iconos["ficha"], ft.Text("Ficha del Vehículo")]), on_click=lambda e: ficha_tecnica(page), tooltip="Ficha técnica"),
+            ft.PopupMenuItem(content=ft.Row([iconos["presupuesto"], ft.Text("Presupuesto")]), on_click=lambda e: presupuesto(page), tooltip="Presupuestos"),
         ],
         content=ft.Row([ft.Image(src="iconos/Ficha.png", width=24, height=24), ft.Text("Administración")]), tooltip="Administración"
     )
@@ -66,7 +65,7 @@ def menu_principal(page: ft.Page):
     acceso_rapido = ft.Row([
         ft.IconButton(content=iconos["cliente"], tooltip="Clientes", on_click=lambda e: Herramienta_Cliente(page, menu_principal)),
         ft.IconButton(content=iconos["proveedor"], tooltip="Proveedores", on_click=lambda e: Herramienta_Proveedor(page, menu_principal)),
-        ft.IconButton(content=iconos["repuesto"], tooltip="Repuestos", on_click=lambda e: Herramienta_Repuesto(page, menu_principal)),
+        ft.IconButton(content=iconos["producto"], tooltip="Productos", on_click=lambda e: Herramienta_Producto(page, menu_principal)),
         ft.IconButton(content=iconos["empleado"], tooltip="Empleados", on_click=lambda e: Herramienta_Empleado(page, menu_principal)),
         ft.IconButton(content=iconos["usuario"], tooltip="Usuarios", on_click=lambda e: Herramienta_Usuario(page, menu_principal)),
     ], alignment=ft.MainAxisAlignment.START, spacing=16)
@@ -81,6 +80,39 @@ def menu_principal(page: ft.Page):
             padding=20
         )
     )
+    page.update()
+
+def ficha_tecnica(page: ft.Page):
+    page.clean()
+    txt_patente = ft.TextField(label="Patente", width=260)
+    txt_marca = ft.TextField(label="Marca", width=260)
+    txt_modelo = ft.TextField(label="Modelo", width=260)
+    txt_color = ft.TextField(label="Color", width=260)
+    btn_volver = ft.ElevatedButton("Volver", on_click=lambda e: menu_principal(page))
+    page.add(
+        ft.Text("Ficha Técnica del Vehículo", size=22, weight="bold"),
+        txt_patente,
+        txt_marca,
+        txt_modelo,
+        txt_color,
+        btn_volver
+    )
+    page.update()
+
+def presupuesto(page: ft.Page):
+    page.clean()
+    txt_dni = ft.TextField(label="DNI Cliente", width=260)
+    txt_monto = ft.TextField(label="Monto", width=260)
+    txt_estado = ft.TextField(label="Estado", width=260)
+    btn_volver = ft.ElevatedButton("Volver", on_click=lambda e: menu_principal(page))
+    page.add(
+        ft.Text("Presupuesto", size=22, weight="bold"),
+        txt_dni,
+        txt_monto,
+        txt_estado,
+        btn_volver
+    )
+    page.update()
 
 def main(page: ft.Page):
     menu_principal(page)

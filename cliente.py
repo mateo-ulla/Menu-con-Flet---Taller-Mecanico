@@ -1,4 +1,3 @@
-
 import flet as ft
 import mysql.connector
 
@@ -32,9 +31,12 @@ class Herramienta_Cliente:
         self.txt_apellido = ft.TextField(label="Apellido", width=260)
         self.txt_direccion = ft.TextField(label="Dirección", width=260)
         self.txt_telefono = ft.TextField(label="Teléfono", width=260)
-        btn_guardar = ft.ElevatedButton("Guardar", icon=ft.icons.SAVE, on_click=self.guardar)
-        btn_limpiar = ft.ElevatedButton("Limpiar", icon=ft.icons.CLEAR, on_click=self.limpiar)
-        btn_volver = ft.ElevatedButton("Volver", icon=ft.icons.ARROW_BACK, on_click=self.volver_menu)
+        btn_guardar = ft.ElevatedButton("Guardar", on_click=self.guardar)
+        btn_limpiar = ft.ElevatedButton("Limpiar", on_click=self.limpiar)
+        btn_alta = ft.ElevatedButton("Alta", on_click=self.alta)
+        btn_baja = ft.ElevatedButton("Baja", on_click=self.baja)
+        btn_consulta = ft.ElevatedButton("Consulta", on_click=self.consulta)
+        btn_volver = ft.ElevatedButton("Volver", on_click=self.volver_menu)
         self.tabla = ft.DataTable(
             columns=[
                 ft.DataColumn(label=ft.Text("DNI")),
@@ -53,7 +55,7 @@ class Herramienta_Cliente:
             self.txt_apellido,
             self.txt_direccion,
             self.txt_telefono,
-            ft.Row([btn_guardar, btn_limpiar, btn_volver], spacing=10),
+            ft.Row([btn_alta, btn_baja, btn_guardar, btn_limpiar, btn_volver], spacing=10),
             ft.Divider(),
             self.tabla
         )
@@ -99,6 +101,39 @@ class Herramienta_Cliente:
                 self.conn.commit()
             self.limpiar()
             self.mostrar_clientes()
+    def alta(self, e):
+        dni = self.txt_dni.value.strip()
+        nombre = self.txt_nombre.value.strip()
+        apellido = self.txt_apellido.value.strip()
+        direccion = self.txt_direccion.value.strip()
+        telefono = self.txt_telefono.value.strip()
+        if dni and nombre and apellido and direccion and telefono:
+            self.cursor.execute("SELECT DNI FROM clientes WHERE DNI=%s", (dni,))
+            if not self.cursor.fetchone():
+                self.cursor.execute("INSERT INTO clientes (DNI, Nombre, Apellido, Direccion, Telefono) VALUES (%s, %s, %s, %s, %s)", (dni, nombre, apellido, direccion, telefono))
+                self.conn.commit()
+        self.limpiar()
+        self.mostrar_clientes()
+
+    def baja(self, e):
+        dni = self.txt_dni.value.strip()
+        if dni:
+            self.cursor.execute("DELETE FROM clientes WHERE DNI=%s", (dni,))
+            self.conn.commit()
+        self.limpiar()
+        self.mostrar_clientes()
+
+    def consulta(self, e):
+        dni = self.txt_dni.value.strip()
+        if dni:
+            self.cursor.execute("SELECT Nombre, Apellido, Direccion, Telefono FROM clientes WHERE DNI=%s", (dni,))
+            data = self.cursor.fetchone()
+            if data:
+                self.txt_nombre.value = data[0]
+                self.txt_apellido.value = data[1]
+                self.txt_direccion.value = data[2]
+                self.txt_telefono.value = data[3]
+                self.page.update()
 
     def limpiar(self, e=None):
         self.txt_dni.value = ""

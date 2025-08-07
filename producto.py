@@ -16,7 +16,7 @@ def conectar():
     except Exception:
         return None
 
-class Herramienta_Repuesto:
+class Herramienta_Producto:
     def __init__(self, page, volver):
         self.page = page
         self.volver = volver
@@ -30,9 +30,10 @@ class Herramienta_Repuesto:
         self.txt_nombre = ft.TextField(label="Nombre", width=260)
         self.txt_precio = ft.TextField(label="Precio", width=260)
         self.txt_fabricante = ft.TextField(label="Fabricante", width=260)
-        btn_guardar = ft.ElevatedButton("Guardar", icon=ft.icons.SAVE, on_click=self.guardar)
-        btn_limpiar = ft.ElevatedButton("Limpiar", icon=ft.icons.CLEAR, on_click=self.limpiar)
-        btn_volver = ft.ElevatedButton("Volver", icon=ft.icons.ARROW_BACK, on_click=self.volver_menu)
+        btn_alta = ft.ElevatedButton("Alta", on_click=self.alta)
+        btn_baja = ft.ElevatedButton("Baja", on_click=self.baja)
+        btn_consulta = ft.ElevatedButton("Consulta", on_click=self.consulta)
+        btn_volver = ft.ElevatedButton("Volver", on_click=self.volver_menu)
         self.tabla = ft.DataTable(
             columns=[
                 ft.DataColumn(label=ft.Text("ID")),
@@ -44,11 +45,11 @@ class Herramienta_Repuesto:
             rows=[]
         )
         self.page.add(
-            ft.Text("Repuestos", size=22, weight="bold"),
+            ft.Text("Productos", size=22, weight="bold"),
             self.txt_nombre,
             self.txt_precio,
             self.txt_fabricante,
-            ft.Row([btn_guardar, btn_limpiar, btn_volver], spacing=10),
+            ft.Row([btn_alta, btn_baja, btn_consulta, btn_volver], spacing=10),
             ft.Divider(),
             self.tabla
         )
@@ -69,28 +70,43 @@ class Herramienta_Repuesto:
                     ft.DataCell(ft.Text(str(fila[2]))),
                     ft.DataCell(ft.Text(fila[3])),
                     ft.DataCell(ft.Row([
-                        ft.IconButton(icon=ft.icons.EDIT, tooltip="Editar", on_click=lambda e, id=idr: self.cargar_editar(id)),
-                        ft.IconButton(icon=ft.icons.DELETE, tooltip="Borrar", on_click=lambda e, id=idr: self.borrar(id)),
+                        ft.IconButton(content=ft.Image(src="iconos/modificar.png", width=24, height=24), tooltip="Editar", on_click=lambda e, id=idr: self.cargar_editar(id)),
+                        ft.IconButton(content=ft.Image(src="iconos/bote-de-basura.png", width=24, height=24), tooltip="Borrar", on_click=lambda e, id=idr: self.borrar(id)),
                     ]))
                 ]))
         except Exception:
             pass
         self.page.update()
 
-    def guardar(self, e):
+    def alta(self, e):
         nombre = self.txt_nombre.value.strip()
         precio = self.txt_precio.value.strip()
         fabricante = self.txt_fabricante.value.strip()
         if nombre and precio and fabricante:
-            if hasattr(self, 'editando') and self.editando:
-                self.cursor.execute("UPDATE repuestos SET nombre=%s, precio=%s, fabricante=%s WHERE id=%s", (nombre, precio, fabricante, self.editando))
-                self.conn.commit()
-                self.editando = None
-            else:
+            self.cursor.execute("SELECT nombre FROM repuestos WHERE nombre=%s", (nombre,))
+            if not self.cursor.fetchone():
                 self.cursor.execute("INSERT INTO repuestos (nombre, precio, fabricante) VALUES (%s, %s, %s)", (nombre, precio, fabricante))
                 self.conn.commit()
-            self.limpiar()
-            self.mostrar_repuestos()
+        self.limpiar()
+        self.mostrar_repuestos()
+
+    def baja(self, e):
+        nombre = self.txt_nombre.value.strip()
+        if nombre:
+            self.cursor.execute("DELETE FROM repuestos WHERE nombre=%s", (nombre,))
+            self.conn.commit()
+        self.limpiar()
+        self.mostrar_repuestos()
+
+    def consulta(self, e):
+        nombre = self.txt_nombre.value.strip()
+        if nombre:
+            self.cursor.execute("SELECT precio, fabricante FROM repuestos WHERE nombre=%s", (nombre,))
+            data = self.cursor.fetchone()
+            if data:
+                self.txt_precio.value = str(data[0])
+                self.txt_fabricante.value = data[1]
+                self.page.update()
 
     def limpiar(self, e=None):
         self.txt_nombre.value = ""

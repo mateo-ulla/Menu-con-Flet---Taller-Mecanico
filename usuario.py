@@ -67,7 +67,7 @@ class Herramienta_Usuario:
             self.page.update()
             return
         try:
-            self.cursor.execute("SELECT id_usuario, nombre, apellido, usuario, contraseña, rol FROM usuarios")
+            self.cursor.execute("SELECT id_usuario, nombre, apellido, usuario, contrasena, rol FROM usuarios")
             for fila in self.cursor.fetchall():
                 idu = fila[0]
                 self.tabla.rows.append(ft.DataRow(cells=[
@@ -79,7 +79,7 @@ class Herramienta_Usuario:
                     ft.DataCell(ft.Text(fila[5])),
                     ft.DataCell(ft.Row([
                     ft.IconButton(content=ft.Image(src="iconos/modificar.png", width=24, height=24), tooltip="Editar", on_click=lambda e, id=idu: self.cargar_editar(id)),
-                    ft.IconButton(content=ft.Image(src="iconos/bote-de-basura.png", width=24, height=24), tooltip="Borrar", on_click=lambda e, id=idu: self.borrar(id)),
+                    ft.IconButton(icon=ft.icons.DELETE, tooltip="Borrar", on_click=lambda e, id=idu: self.borrar(id)),
                     ]))
                 ]))
         except Exception:
@@ -90,12 +90,12 @@ class Herramienta_Usuario:
         nombre = self.txt_nombre.value.strip()
         apellido = self.txt_apellido.value.strip()
         usuario = self.txt_usuario.value.strip()
-        contraseña = self.txt_contraseña.value.strip()
+        contrasena = self.txt_contraseña.value.strip()
         rol = self.txt_rol.value.strip()
-        if nombre and apellido and usuario and contraseña and rol:
+        if nombre and apellido and usuario and contrasena and rol:
             self.cursor.execute("SELECT usuario FROM usuarios WHERE usuario=%s", (usuario,))
             if not self.cursor.fetchone():
-                self.cursor.execute("INSERT INTO usuarios (nombre, apellido, usuario, contraseña, rol) VALUES (%s, %s, %s, %s, %s)", (nombre, apellido, usuario, contraseña, rol))
+                self.cursor.execute("INSERT INTO usuarios (nombre, apellido, usuario, contrasena, rol) VALUES (%s, %s, %s, %s, %s)", (nombre, apellido, usuario, contrasena, rol))
                 self.conn.commit()
         self.limpiar()
         self.mostrar_usuarios()
@@ -111,7 +111,7 @@ class Herramienta_Usuario:
     def consulta(self, e):
         usuario = self.txt_usuario.value.strip()
         if usuario:
-            self.cursor.execute("SELECT nombre, apellido, contraseña, rol FROM usuarios WHERE usuario=%s", (usuario,))
+            self.cursor.execute("SELECT nombre, apellido, contrasena, rol FROM usuarios WHERE usuario=%s", (usuario,))
             data = self.cursor.fetchone()
             if data:
                 self.txt_nombre.value = data[0]
@@ -130,7 +130,7 @@ class Herramienta_Usuario:
         self.page.update()
 
     def cargar_editar(self, idu):
-        self.cursor.execute("SELECT nombre, apellido, usuario, contraseña, rol FROM usuarios WHERE id_usuario=%s", (idu,))
+        self.cursor.execute("SELECT nombre, apellido, usuario, contrasena, rol FROM usuarios WHERE id_usuario=%s", (idu,))
         data = self.cursor.fetchone()
         if data:
             self.txt_nombre.value = data[0]

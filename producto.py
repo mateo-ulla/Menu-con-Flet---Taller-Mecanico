@@ -61,7 +61,7 @@ class Herramienta_Producto:
             self.page.update()
             return
         try:
-            self.cursor.execute("SELECT id, nombre, precio, fabricante FROM repuestos")
+            self.cursor.execute("SELECT id, nombre, precio, fabricante FROM productos")
             for fila in self.cursor.fetchall():
                 idr = fila[0]
                 self.tabla.rows.append(ft.DataRow(cells=[
@@ -71,7 +71,7 @@ class Herramienta_Producto:
                     ft.DataCell(ft.Text(fila[3])),
                     ft.DataCell(ft.Row([
                         ft.IconButton(content=ft.Image(src="iconos/modificar.png", width=24, height=24), tooltip="Editar", on_click=lambda e, id=idr: self.cargar_editar(id)),
-                        ft.IconButton(content=ft.Image(src="iconos/bote-de-basura.png", width=24, height=24), tooltip="Borrar", on_click=lambda e, id=idr: self.borrar(id)),
+                        ft.IconButton(icon=ft.icons.DELETE, tooltip="Borrar", on_click=lambda e, id=idr: self.borrar(id)),
                     ]))
                 ]))
         except Exception:
@@ -83,9 +83,9 @@ class Herramienta_Producto:
         precio = self.txt_precio.value.strip()
         fabricante = self.txt_fabricante.value.strip()
         if nombre and precio and fabricante:
-            self.cursor.execute("SELECT nombre FROM repuestos WHERE nombre=%s", (nombre,))
+            self.cursor.execute("SELECT nombre FROM productos WHERE nombre=%s", (nombre,))
             if not self.cursor.fetchone():
-                self.cursor.execute("INSERT INTO repuestos (nombre, precio, fabricante) VALUES (%s, %s, %s)", (nombre, precio, fabricante))
+                self.cursor.execute("INSERT INTO productos (nombre, precio, fabricante) VALUES (%s, %s, %s)", (nombre, precio, fabricante))
                 self.conn.commit()
         self.limpiar()
         self.mostrar_repuestos()
@@ -93,7 +93,7 @@ class Herramienta_Producto:
     def baja(self, e):
         nombre = self.txt_nombre.value.strip()
         if nombre:
-            self.cursor.execute("DELETE FROM repuestos WHERE nombre=%s", (nombre,))
+            self.cursor.execute("DELETE FROM productos WHERE nombre=%s", (nombre,))
             self.conn.commit()
         self.limpiar()
         self.mostrar_repuestos()
@@ -101,7 +101,7 @@ class Herramienta_Producto:
     def consulta(self, e):
         nombre = self.txt_nombre.value.strip()
         if nombre:
-            self.cursor.execute("SELECT precio, fabricante FROM repuestos WHERE nombre=%s", (nombre,))
+            self.cursor.execute("SELECT precio, fabricante FROM productos WHERE nombre=%s", (nombre,))
             data = self.cursor.fetchone()
             if data:
                 self.txt_precio.value = str(data[0])
@@ -116,7 +116,7 @@ class Herramienta_Producto:
         self.page.update()
 
     def cargar_editar(self, idr):
-        self.cursor.execute("SELECT nombre, precio, fabricante FROM repuestos WHERE id=%s", (idr,))
+        self.cursor.execute("SELECT nombre, precio, fabricante FROM productos WHERE id=%s", (idr,))
         data = self.cursor.fetchone()
         if data:
             self.txt_nombre.value = data[0]
@@ -126,7 +126,7 @@ class Herramienta_Producto:
             self.page.update()
 
     def borrar(self, idr):
-        self.cursor.execute("DELETE FROM repuestos WHERE id=%s", (idr,))
+        self.cursor.execute("DELETE FROM productos WHERE id=%s", (idr,))
         self.conn.commit()
         self.mostrar_repuestos()
 

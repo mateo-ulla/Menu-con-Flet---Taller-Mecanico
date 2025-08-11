@@ -77,7 +77,7 @@ class Herramienta_Empleado:
                     ft.DataCell(ft.Text(fila[4])),
                     ft.DataCell(ft.Row([
                         ft.IconButton(content=ft.Image(src="iconos/modificar.png", width=24, height=24), tooltip="Editar", on_click=lambda e, id=legajo: self.cargar_editar(id)),
-                        ft.IconButton(content=ft.Image(src="iconos/bote-de-basura.png", width=24, height=24), tooltip="Borrar", on_click=lambda e, id=legajo: self.borrar(id)),
+                        ft.IconButton(icon=ft.icons.DELETE, tooltip="Borrar", on_click=lambda e, id=legajo: self.borrar(id)),
                     ]))
                 ]))
         except Exception:

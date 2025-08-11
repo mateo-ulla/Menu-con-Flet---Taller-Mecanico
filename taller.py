@@ -24,21 +24,44 @@ def menu_principal(page: ft.Page):
     page.window.maximized = True
     page.title = "Taller Mecánico"
     iconos = {
-        "cliente": ft.Image(src="iconos/Cliente.png", width=32, height=32),
-        "proveedor": ft.Image(src="iconos/proveedor.png", width=32, height=32),
-        "producto": ft.Image(src="iconos/caja-de-cambios.png", width=32, height=32),
-        "empleado": ft.Image(src="iconos/Empleado.png", width=32, height=32),
-        "usuario": ft.Image(src="iconos/usuarios.png", width=32, height=32),
-        "ficha": ft.Image(src="iconos/auto.png", width=32, height=32),
-        "presupuesto": ft.Image(src="iconos/Presupuesto.png", width=32, height=32)
+        "cliente": ft.Image(src="./iconos/Cliente.png", width=32, height=32),
+        "proveedor": ft.Image(src="./iconos/proveedor.png", width=32, height=32),
+        "producto": ft.Image(src="./iconos/caja-de-cambios.png", width=32, height=32),
+        "empleado": ft.Image(src="./iconos/Empleado.png", width=32, height=32),
+        "usuario": ft.Image(src="./iconos/usuarios.png", width=32, height=32),
+        "ficha": ft.Image(src="./iconos/auto.png", width=32, height=32),
+        "presupuesto": ft.Image(src="./iconos/Presupuesto.png", width=32, height=32)
     }
+    conn = conectar()
+    resumen = {}
+    error_db = None
+    if conn:
+        try:
+            cursor = conn.cursor()
+            cursor.execute("SELECT COUNT(*) FROM clientes")
+            resumen['clientes'] = cursor.fetchone()[0]
+            cursor.execute("SELECT COUNT(*) FROM proveedores")
+            resumen['proveedores'] = cursor.fetchone()[0]
+            cursor.execute("SELECT COUNT(*) FROM productos")
+            resumen['productos'] = cursor.fetchone()[0]
+            cursor.execute("SELECT COUNT(*) FROM mecanicos")
+            resumen['empleados'] = cursor.fetchone()[0]
+            cursor.execute("SELECT COUNT(*) FROM usuarios")
+            resumen['usuarios'] = cursor.fetchone()[0]
+        except Exception as ex:
+            error_db = f"Error consultando la base de datos: {ex}"
+        finally:
+            cursor.close()
+            conn.close()
+    else:
+        error_db = "No se pudo conectar a la base de datos. Verifique configuración y servidor MySQL."
     archivo_menu = ft.PopupMenuButton(
         items=[
-            ft.PopupMenuItem(text="Copiar", icon=ft.Image(src="iconos/bandeja-de-entrada.png", width=24, height=24)),
-            ft.PopupMenuItem(text="Pegar", icon=ft.Image(src="iconos/papel.png", width=24, height=24)),
-            ft.PopupMenuItem(text="Salir", icon=ft.Image(src="iconos/nota-adhesiva.png", width=24, height=24), on_click=lambda e: page.window.close()),
+            ft.PopupMenuItem(text="Copiar", icon=ft.Image(src="./iconos/bandeja-de-entrada.png", width=24, height=24)),
+            ft.PopupMenuItem(text="Pegar", icon=ft.Image(src="./iconos/papel.png", width=24, height=24)),
+            ft.PopupMenuItem(text="Salir", icon=ft.Image(src="./iconos/nota-adhesiva.png", width=24, height=24), on_click=lambda e: page.window.close()),
         ],
-        content=ft.Row([ft.Image(src="iconos/carpeta.png", width=24, height=24), ft.Text("Archivo")]), tooltip="Archivo"
+        content=ft.Row([ft.Image(src="./iconos/carpeta.png", width=24, height=24), ft.Text("Archivo")]), tooltip="Archivo"
     )
     herramientas_menu = ft.PopupMenuButton(
         items=[
@@ -48,14 +71,14 @@ def menu_principal(page: ft.Page):
             ft.PopupMenuItem(content=ft.Row([iconos["empleado"], ft.Text("Empleado")]), on_click=lambda e: Herramienta_Empleado(page, menu_principal), tooltip="Gestión de empleados"),
             ft.PopupMenuItem(content=ft.Row([iconos["usuario"], ft.Text("Usuario")]), on_click=lambda e: Herramienta_Usuario(page, menu_principal), tooltip="Gestión de usuarios"),
         ],
-        content=ft.Row([ft.Image(src="iconos/gestion-de-proyectos.png", width=24, height=24), ft.Text("Herramientas")]), tooltip="Herramientas"
+        content=ft.Row([ft.Image(src="./iconos/gestion-de-proyectos.png", width=24, height=24), ft.Text("Herramientas")]), tooltip="Herramientas"
     )
     administracion_menu = ft.PopupMenuButton(
         items=[
             ft.PopupMenuItem(content=ft.Row([iconos["ficha"], ft.Text("Ficha del Vehículo")]), on_click=lambda e: ficha_tecnica(page), tooltip="Ficha técnica"),
             ft.PopupMenuItem(content=ft.Row([iconos["presupuesto"], ft.Text("Presupuesto")]), on_click=lambda e: presupuesto(page), tooltip="Presupuestos"),
         ],
-        content=ft.Row([ft.Image(src="iconos/Ficha.png", width=24, height=24), ft.Text("Administración")]), tooltip="Administración"
+        content=ft.Row([ft.Image(src="./iconos/Ficha.png", width=24, height=24), ft.Text("Administración")]), tooltip="Administración"
     )
     barra_menu = ft.Row([
         archivo_menu,
@@ -69,13 +92,27 @@ def menu_principal(page: ft.Page):
         ft.IconButton(content=iconos["empleado"], tooltip="Empleados", on_click=lambda e: Herramienta_Empleado(page, menu_principal)),
         ft.IconButton(content=iconos["usuario"], tooltip="Usuarios", on_click=lambda e: Herramienta_Usuario(page, menu_principal)),
     ], alignment=ft.MainAxisAlignment.START, spacing=16)
+    resumen_items = []
+    if error_db:
+        resumen_items.append(ft.Text(error_db, color="#FF0000", size=16))
+    else:
+        resumen_items.append(ft.Text("Resumen de datos", size=20, weight="bold"))
+        resumen_items.append(ft.Row([
+            ft.Image(src="./iconos/Cliente.png", width=24, height=24), ft.Text(f"Clientes: {resumen.get('clientes', 0)}"),
+            ft.Image(src="./iconos/proveedor.png", width=24, height=24), ft.Text(f"Proveedores: {resumen.get('proveedores', 0)}"),
+            ft.Image(src="./iconos/caja-de-cambios.png", width=24, height=24), ft.Text(f"Productos: {resumen.get('productos', 0)}"),
+            ft.Image(src="./iconos/Empleado.png", width=24, height=24), ft.Text(f"Empleados: {resumen.get('empleados', 0)}"),
+            ft.Image(src="./iconos/usuarios.png", width=24, height=24), ft.Text(f"Usuarios: {resumen.get('usuarios', 0)}"),
+        ], spacing=16))
     page.clean()
     page.add(
         ft.Container(
             content=ft.Column([
                 barra_menu,
                 ft.Divider(),
-                acceso_rapido
+                acceso_rapido,
+                ft.Divider(),
+                *resumen_items
             ], alignment=ft.MainAxisAlignment.START),
             padding=20
         )

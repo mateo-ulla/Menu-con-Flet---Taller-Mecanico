@@ -1,60 +1,59 @@
-CREATE DATABASE IF NOT EXISTS `Taller_Mecanico`;
+CREATE DATABASE IF NOT EXISTS taller_mecanico;
+USE taller_mecanico;
 
-USE `Taller_Mecanico`;
-
-CREATE TABLE IF NOT EXISTS `Clientes` (
-    `DNI` VARCHAR(255) PRIMARY KEY,
-    `Nombre` VARCHAR(255),
-    `Apellido` VARCHAR(255),
-    `Direccion` VARCHAR(255),
-    `Telefono` VARCHAR(255)
+CREATE TABLE IF NOT EXISTS clientes (
+    dni VARCHAR(255) PRIMARY KEY,
+    nombre VARCHAR(255),
+    apellido VARCHAR(255),
+    direccion VARCHAR(255),
+    telefono VARCHAR(255)
 );
 
-CREATE TABLE IF NOT EXISTS `Vehiculos` (
-    `Patente` VARCHAR(255) PRIMARY KEY,
-    `DNI` VARCHAR(255),
-    `Marca` VARCHAR(255),
-    `Modelo` VARCHAR(255),
-    `Color` VARCHAR(255),
-    FOREIGN KEY (`DNI`) REFERENCES `Clientes`(`DNI`)
+CREATE TABLE IF NOT EXISTS vehiculos (
+    patente VARCHAR(255) PRIMARY KEY,
+    dni VARCHAR(255),
+    marca VARCHAR(255),
+    modelo VARCHAR(255),
+    color VARCHAR(255),
+    FOREIGN KEY (dni) REFERENCES clientes(dni)
 );
 
-CREATE TABLE IF NOT EXISTS `Mecanicos` (
-    `Legajo` VARCHAR(255) PRIMARY KEY,
-    `Nombre` VARCHAR(255),
-    `Apellido` VARCHAR(255),
-    `Rol` VARCHAR(255),
-    `Estado` VARCHAR(255)
+CREATE TABLE IF NOT EXISTS mecanicos (
+    legajo VARCHAR(255) PRIMARY KEY,
+    nombre VARCHAR(255),
+    apellido VARCHAR(255),
+    rol VARCHAR(255),
+    estado VARCHAR(255)
 );
 
-CREATE TABLE IF NOT EXISTS `Repuestos` (
-    `Id` INT PRIMARY KEY,
-    `Nombre` VARCHAR(255),
-    `Precio` INT,
-    `Fabricante` VARCHAR(255)
+CREATE TABLE IF NOT EXISTS productos (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    nombre VARCHAR(255),
+    precio INT,
+    fabricante VARCHAR(255)
 );
 
-CREATE TABLE IF NOT EXISTS `Reparaciones` (
-    `id_reparacion` INT PRIMARY KEY,
-    `Fecha_entrada` DATE,
-    `Hora_entrada` TIME,
-    `Patente` VARCHAR(255),
-    `Legajo` VARCHAR(255),
-    `DNI` VARCHAR(255), 
-    FOREIGN KEY (`Patente`) REFERENCES `Vehiculos`(`Patente`),
-    FOREIGN KEY (`Legajo`) REFERENCES `Mecanicos`(`Legajo`),
-    FOREIGN KEY (`DNI`) REFERENCES `Clientes`(`DNI`)
+CREATE TABLE IF NOT EXISTS reparaciones (
+    id_reparacion INT PRIMARY KEY AUTO_INCREMENT,
+    fecha_entrada DATE,
+    hora_entrada TIME,
+    patente VARCHAR(255),
+    legajo VARCHAR(255),
+    dni VARCHAR(255), 
+    FOREIGN KEY (patente) REFERENCES vehiculos(patente),
+    FOREIGN KEY (legajo) REFERENCES mecanicos(legajo),
+    FOREIGN KEY (dni) REFERENCES clientes(dni)
 );
 
-CREATE TABLE IF NOT EXISTS `Mecanico_Reparaciones` (
-    `Legajo` VARCHAR(255),
-    `id_reparacion` INT,
-    PRIMARY KEY (`Legajo`, `id_reparacion`),
-    FOREIGN KEY (`Legajo`) REFERENCES `Mecanicos`(`Legajo`),
-    FOREIGN KEY (`id_reparacion`) REFERENCES `Reparaciones`(`id_reparacion`)
+CREATE TABLE IF NOT EXISTS mecanico_reparaciones (
+    legajo VARCHAR(255),
+    id_reparacion INT,
+    PRIMARY KEY (legajo, id_reparacion),
+    FOREIGN KEY (legajo) REFERENCES mecanicos(legajo),
+    FOREIGN KEY (id_reparacion) REFERENCES reparaciones(id_reparacion)
 );
 
-CREATE TABLE Ficha_tecnica (
+CREATE TABLE IF NOT EXISTS ficha_tecnica (
     id_ficha  VARCHAR(255) PRIMARY KEY,
     dni_cliente VARCHAR(255),
     marca VARCHAR(255) NOT NULL,
@@ -64,12 +63,20 @@ CREATE TABLE Ficha_tecnica (
     fecha_ingreso DATE
 );
 
+CREATE TABLE IF NOT EXISTS facturacion (
+    id_factura INT PRIMARY KEY AUTO_INCREMENT,
+    dni_cliente VARCHAR(255),
+    fecha_factura DATE,
+    monto DECIMAL(10, 2),
+    estado ENUM('Emitida', 'Anulada'),
+    FOREIGN KEY (dni_cliente) REFERENCES clientes(dni)
+);
 
-CREATE TABLE IF NOT EXISTS `Facturacion` (
-    `id_factura` INT PRIMARY KEY AUTO_INCREMENT,
-    `DNI_Cliente` VARCHAR(255),
-    `Fecha_Factura` DATE,
-    `Monto` DECIMAL(10, 2),
-    `Estado` ENUM('Emitida', 'Anulada'),
-    FOREIGN KEY (`DNI_Cliente`) REFERENCES `Clientes`(`DNI`)
+CREATE TABLE IF NOT EXISTS usuarios (
+    id_usuario INT PRIMARY KEY AUTO_INCREMENT,
+    nombre VARCHAR(255),
+    apellido VARCHAR(255),
+    usuario VARCHAR(255) UNIQUE,
+    contrasena VARCHAR(255),
+    rol VARCHAR(255)
 );

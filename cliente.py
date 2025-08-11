@@ -67,7 +67,7 @@ class Herramienta_Cliente:
             self.page.update()
             return
         try:
-            self.cursor.execute("SELECT DNI, Nombre, Apellido, Direccion, Telefono FROM clientes")
+            self.cursor.execute("SELECT dni, nombre, apellido, direccion, telefono FROM clientes")
             for fila in self.cursor.fetchall():
                 dni = fila[0]
                 self.tabla.rows.append(ft.DataRow(cells=[
@@ -93,11 +93,11 @@ class Herramienta_Cliente:
         telefono = self.txt_telefono.value.strip()
         if dni and nombre and apellido and direccion and telefono:
             if hasattr(self, 'editando') and self.editando:
-                self.cursor.execute("UPDATE clientes SET Nombre=%s, Apellido=%s, Direccion=%s, Telefono=%s WHERE DNI=%s", (nombre, apellido, direccion, telefono, self.editando))
+                self.cursor.execute("UPDATE clientes SET nombre=%s, apellido=%s, direccion=%s, telefono=%s WHERE dni=%s", (nombre, apellido, direccion, telefono, self.editando))
                 self.conn.commit()
                 self.editando = None
             else:
-                self.cursor.execute("INSERT INTO clientes (DNI, Nombre, Apellido, Direccion, Telefono) VALUES (%s, %s, %s, %s, %s)", (dni, nombre, apellido, direccion, telefono))
+                self.cursor.execute("INSERT INTO clientes (dni, nombre, apellido, direccion, telefono) VALUES (%s, %s, %s, %s, %s)", (dni, nombre, apellido, direccion, telefono))
                 self.conn.commit()
             self.limpiar()
             self.mostrar_clientes()
@@ -108,9 +108,9 @@ class Herramienta_Cliente:
         direccion = self.txt_direccion.value.strip()
         telefono = self.txt_telefono.value.strip()
         if dni and nombre and apellido and direccion and telefono:
-            self.cursor.execute("SELECT DNI FROM clientes WHERE DNI=%s", (dni,))
+            self.cursor.execute("SELECT dni FROM clientes WHERE dni=%s", (dni,))
             if not self.cursor.fetchone():
-                self.cursor.execute("INSERT INTO clientes (DNI, Nombre, Apellido, Direccion, Telefono) VALUES (%s, %s, %s, %s, %s)", (dni, nombre, apellido, direccion, telefono))
+                self.cursor.execute("INSERT INTO clientes (dni, nombre, apellido, direccion, telefono) VALUES (%s, %s, %s, %s, %s)", (dni, nombre, apellido, direccion, telefono))
                 self.conn.commit()
         self.limpiar()
         self.mostrar_clientes()
@@ -118,7 +118,7 @@ class Herramienta_Cliente:
     def baja(self, e):
         dni = self.txt_dni.value.strip()
         if dni:
-            self.cursor.execute("DELETE FROM clientes WHERE DNI=%s", (dni,))
+            self.cursor.execute("DELETE FROM clientes WHERE dni=%s", (dni,))
             self.conn.commit()
         self.limpiar()
         self.mostrar_clientes()
@@ -126,7 +126,7 @@ class Herramienta_Cliente:
     def consulta(self, e):
         dni = self.txt_dni.value.strip()
         if dni:
-            self.cursor.execute("SELECT Nombre, Apellido, Direccion, Telefono FROM clientes WHERE DNI=%s", (dni,))
+            self.cursor.execute("SELECT nombre, apellido, direccion, telefono FROM clientes WHERE dni=%s", (dni,))
             data = self.cursor.fetchone()
             if data:
                 self.txt_nombre.value = data[0]
@@ -145,7 +145,7 @@ class Herramienta_Cliente:
         self.page.update()
 
     def cargar_editar(self, dni):
-        self.cursor.execute("SELECT Nombre, Apellido, Direccion, Telefono FROM clientes WHERE DNI=%s", (dni,))
+        self.cursor.execute("SELECT nombre, apellido, direccion, telefono FROM clientes WHERE dni=%s", (dni,))
         data = self.cursor.fetchone()
         if data:
             self.txt_nombre.value = data[0]
@@ -156,7 +156,7 @@ class Herramienta_Cliente:
             self.page.update()
 
     def borrar(self, dni):
-        self.cursor.execute("DELETE FROM clientes WHERE DNI=%s", (dni,))
+        self.cursor.execute("DELETE FROM clientes WHERE dni=%s", (dni,))
         self.conn.commit()
         self.mostrar_clientes()
 

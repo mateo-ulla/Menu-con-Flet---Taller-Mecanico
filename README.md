@@ -23,14 +23,19 @@ Este proyecto es una aplicación de escritorio desarrollada con Flet y Python pa
 ## Instalación
 
 1. Clona el repositorio o descarga los archivos.
-2. Instala las dependencias:
-   ```bash
-   pip install flet mysql-connector-python
+2. Crea y activa el entorno virtual (solo la primera vez):
+   ```powershell
+   python -m venv .venv
+   .venv\Scripts\Activate
    ```
-3. Configura la base de datos MySQL usando el script `taller_mecanico.sql`.
-4. Ejecuta la aplicación principal:
-   ```bash
-   python FLET\ Visual\taller.py
+3. Instala las dependencias:
+   ```powershell
+   pip install -r requirements.txt
+   ```
+4. Configura la base de datos MySQL usando el script `taller_mecanico.sql`.
+5. Ejecuta la aplicación principal:
+   ```powershell
+   python taller.py
    ```
 
 ## Estructura del Proyecto
